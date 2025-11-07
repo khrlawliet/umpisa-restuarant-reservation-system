@@ -1,7 +1,7 @@
 package com.umpisa.restaurant.reservationservice.repository;
 
-import com.umpisa.restaurant.reservationservice.entity.Reservation;
-import com.umpisa.restaurant.reservationservice.entity.ReservationStatus;
+import com.umpisa.restaurant.reservationservice.model.entity.Reservation;
+import com.umpisa.restaurant.reservationservice.model.entity.ReservationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

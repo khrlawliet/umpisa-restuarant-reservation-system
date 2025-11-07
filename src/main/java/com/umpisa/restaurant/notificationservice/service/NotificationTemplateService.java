@@ -1,49 +1,48 @@
 package com.umpisa.restaurant.notificationservice.service;
 
+import com.umpisa.restaurant.notificationservice.model.NotificationTemplateProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Service for building notification message templates.
- * Provides methods to create formatted messages for different notification types.
+ * Templates are externalized in application.yml for easy maintenance.
+ * Uses placeholder replacement for dynamic content.
  */
 @Service
+@RequiredArgsConstructor
 public class NotificationTemplateService {
 
-    private static final DateTimeFormatter DATE_TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy 'at' hh:mm a");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy 'at' hh:mm a");
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");
+
+    private final NotificationTemplateProperties templateProperties;
 
     /**
      * Build reservation confirmation message.
      *
-     * @param customerName the customer's name
-     * @param reservationId the reservation ID
-     * @param dateTime the reservation date and time
+     * @param customerName   the customer's name
+     * @param reservationId  the reservation ID
+     * @param dateTime       the reservation date and time
      * @param numberOfGuests the number of guests
      * @return the formatted confirmation message
      */
-    public String buildReservationConfirmationMessage(
-            String customerName,
-            Long reservationId,
-            LocalDateTime dateTime,
-            Integer numberOfGuests) {
+    public String buildReservationConfirmationMessage(String customerName,
+                                                      Long reservationId,
+                                                      LocalDateTime dateTime,
+                                                      Integer numberOfGuests) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("customerName", customerName);
+        placeholders.put("reservationId", String.valueOf(reservationId));
+        placeholders.put("dateTime", dateTime.format(DATE_TIME_FORMATTER));
+        placeholders.put("numberOfGuests", String.valueOf(numberOfGuests));
 
-        return String.format(
-                "Dear %s,\n\n" +
-                "Your reservation has been confirmed!\n\n" +
-                "Reservation ID: %d\n" +
-                "Date & Time: %s\n" +
-                "Number of Guests: %d\n\n" +
-                "We look forward to serving you!\n\n" +
-                "Best regards,\n" +
-                "Restaurant Reservation System",
-                customerName,
-                reservationId,
-                dateTime.format(DATE_TIME_FORMATTER),
-                numberOfGuests
-        );
+        return replacePlaceholders(templateProperties.getConfirmation().getBody(), placeholders);
     }
 
     /**
@@ -53,26 +52,26 @@ public class NotificationTemplateService {
      * @return the email subject
      */
     public String buildConfirmationSubject(Long reservationId) {
-        return String.format("Reservation Confirmed - ID #%d", reservationId);
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("reservationId", String.valueOf(reservationId));
+
+        return replacePlaceholders(templateProperties.getConfirmation().getSubject(), placeholders);
     }
 
     /**
      * Build reservation cancellation message.
      *
-     * @param customerName the customer's name
+     * @param customerName  the customer's name
      * @param reservationId the reservation ID
      * @return the formatted cancellation message
      */
-    public String buildCancellationMessage(String customerName, Long reservationId) {
-        return String.format(
-                "Dear %s,\n\n" +
-                "Your reservation (ID: %d) has been cancelled.\n\n" +
-                "If you did not request this cancellation, please contact us immediately.\n\n" +
-                "Thank you,\n" +
-                "Restaurant Reservation System",
-                customerName,
-                reservationId
-        );
+    public String buildCancellationMessage(String customerName,
+                                           Long reservationId) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("customerName", customerName);
+        placeholders.put("reservationId", String.valueOf(reservationId));
+
+        return replacePlaceholders(templateProperties.getCancellation().getBody(), placeholders);
     }
 
     /**
@@ -82,37 +81,32 @@ public class NotificationTemplateService {
      * @return the email subject
      */
     public String buildCancellationSubject(Long reservationId) {
-        return String.format("Reservation Cancelled - ID #%d", reservationId);
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("reservationId", String.valueOf(reservationId));
+
+        return replacePlaceholders(templateProperties.getCancellation().getSubject(), placeholders);
     }
 
     /**
      * Build reservation update message.
      *
-     * @param customerName the customer's name
-     * @param reservationId the reservation ID
-     * @param newDateTime the new reservation date and time
+     * @param customerName      the customer's name
+     * @param reservationId     the reservation ID
+     * @param newDateTime       the new reservation date and time
      * @param newNumberOfGuests the new number of guests
      * @return the formatted update message
      */
-    public String buildUpdateMessage(
-            String customerName,
-            Long reservationId,
-            LocalDateTime newDateTime,
-            Integer newNumberOfGuests) {
+    public String buildUpdateMessage(String customerName,
+                                     Long reservationId,
+                                     LocalDateTime newDateTime,
+                                     Integer newNumberOfGuests) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("customerName", customerName);
+        placeholders.put("reservationId", String.valueOf(reservationId));
+        placeholders.put("dateTime", newDateTime.format(DATE_TIME_FORMATTER));
+        placeholders.put("numberOfGuests", String.valueOf(newNumberOfGuests));
 
-        return String.format(
-                "Dear %s,\n\n" +
-                "Your reservation (ID: %d) has been updated.\n\n" +
-                "New Date & Time: %s\n" +
-                "New Number of Guests: %d\n\n" +
-                "We look forward to serving you!\n\n" +
-                "Best regards,\n" +
-                "Restaurant Reservation System",
-                customerName,
-                reservationId,
-                newDateTime.format(DATE_TIME_FORMATTER),
-                newNumberOfGuests
-        );
+        return replacePlaceholders(templateProperties.getUpdate().getBody(), placeholders);
     }
 
     /**
@@ -122,36 +116,29 @@ public class NotificationTemplateService {
      * @return the email subject
      */
     public String buildUpdateSubject(Long reservationId) {
-        return String.format("Reservation Updated - ID #%d", reservationId);
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("reservationId", String.valueOf(reservationId));
+
+        return replacePlaceholders(templateProperties.getUpdate().getSubject(), placeholders);
     }
 
     /**
      * Build reservation reminder message (4 hours before reservation).
      *
-     * @param customerName the customer's name
-     * @param dateTime the reservation date and time
+     * @param customerName   the customer's name
+     * @param dateTime       the reservation date and time
      * @param numberOfGuests the number of guests
      * @return the formatted reminder message
      */
-    public String buildReminderMessage(
-            String customerName,
-            LocalDateTime dateTime,
-            Integer numberOfGuests) {
+    public String buildReminderMessage(String customerName,
+                                       LocalDateTime dateTime,
+                                       Integer numberOfGuests) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("customerName", customerName);
+        placeholders.put("dateTime", dateTime.format(DATE_TIME_FORMATTER));
+        placeholders.put("numberOfGuests", String.valueOf(numberOfGuests));
 
-        return String.format(
-                "Dear %s,\n\n" +
-                "This is a friendly reminder about your upcoming reservation.\n\n" +
-                "Date & Time: %s\n" +
-                "Number of Guests: %d\n\n" +
-                "Your table will be ready for you in approximately 4 hours.\n\n" +
-                "If you need to make any changes or cancel, please contact us as soon as possible.\n\n" +
-                "We look forward to serving you!\n\n" +
-                "Best regards,\n" +
-                "Restaurant Reservation System",
-                customerName,
-                dateTime.format(DATE_TIME_FORMATTER),
-                numberOfGuests
-        );
+        return replacePlaceholders(templateProperties.getReminder().getBody(), placeholders);
     }
 
     /**
@@ -161,7 +148,25 @@ public class NotificationTemplateService {
      * @return the email subject
      */
     public String buildReminderSubject(LocalDateTime dateTime) {
-        return String.format("Reminder: Your Reservation Today at %s",
-                dateTime.format(DateTimeFormatter.ofPattern("hh:mm a")));
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("time", dateTime.format(TIME_FORMATTER));
+
+        return replacePlaceholders(templateProperties.getReminder().getSubject(), placeholders);
+    }
+
+    /**
+     * Replace placeholders in template with actual values.
+     * Placeholders are in the format {placeholderName}.
+     *
+     * @param template     the template string with placeholders
+     * @param placeholders map of placeholder names to values
+     * @return the processed template with placeholders replaced
+     */
+    private String replacePlaceholders(String template, Map<String, String> placeholders) {
+        String result = template;
+        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+            result = result.replace("{" + entry.getKey() + "}", entry.getValue());
+        }
+        return result;
     }
 }

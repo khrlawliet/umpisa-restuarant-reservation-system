@@ -1,13 +1,14 @@
 package com.umpisa.restaurant.reservationservice.service;
 
-import com.umpisa.restaurant.reservationservice.dto.request.CreateReservationRequest;
-import com.umpisa.restaurant.reservationservice.dto.request.UpdateReservationRequest;
-import com.umpisa.restaurant.reservationservice.dto.response.ReservationResponse;
-import com.umpisa.restaurant.reservationservice.entity.Reservation;
-import com.umpisa.restaurant.reservationservice.entity.event.ReservationCancelledEvent;
-import com.umpisa.restaurant.reservationservice.entity.event.ReservationCreatedEvent;
-import com.umpisa.restaurant.reservationservice.entity.ReservationStatus;
-import com.umpisa.restaurant.reservationservice.entity.event.ReservationUpdatedEvent;
+import com.umpisa.restaurant.reservationservice.mapper.ReservationMapper;
+import com.umpisa.restaurant.reservationservice.model.dto.request.CreateReservationRequest;
+import com.umpisa.restaurant.reservationservice.model.dto.request.UpdateReservationRequest;
+import com.umpisa.restaurant.reservationservice.model.dto.response.ReservationResponse;
+import com.umpisa.restaurant.reservationservice.model.entity.Reservation;
+import com.umpisa.restaurant.reservationservice.model.entity.event.ReservationCancelledEvent;
+import com.umpisa.restaurant.reservationservice.model.entity.event.ReservationCreatedEvent;
+import com.umpisa.restaurant.reservationservice.model.entity.ReservationStatus;
+import com.umpisa.restaurant.reservationservice.model.entity.event.ReservationUpdatedEvent;
 import com.umpisa.restaurant.reservationservice.repository.ReservationRepository;
 import com.umpisa.restaurant.shared.exceptions.InvalidReservationException;
 import com.umpisa.restaurant.shared.exceptions.ResourceNotFoundException;

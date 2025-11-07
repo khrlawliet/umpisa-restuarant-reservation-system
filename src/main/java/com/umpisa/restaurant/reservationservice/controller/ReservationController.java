@@ -1,8 +1,8 @@
 package com.umpisa.restaurant.reservationservice.controller;
 
-import com.umpisa.restaurant.reservationservice.dto.request.CreateReservationRequest;
-import com.umpisa.restaurant.reservationservice.dto.response.ReservationResponse;
-import com.umpisa.restaurant.reservationservice.dto.request.UpdateReservationRequest;
+import com.umpisa.restaurant.reservationservice.model.dto.request.CreateReservationRequest;
+import com.umpisa.restaurant.reservationservice.model.dto.response.ReservationResponse;
+import com.umpisa.restaurant.reservationservice.model.dto.request.UpdateReservationRequest;
 import com.umpisa.restaurant.reservationservice.service.ReservationService;
 import com.umpisa.restaurant.shared.exceptions.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,20 +45,16 @@ public class ReservationController {
             description = "Creates a new restaurant reservation and sends a confirmation notification via the customer's preferred channel (EMAIL, SMS, or BOTH)"
     )
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "201",
+            @ApiResponse(responseCode = "201",
                     description = "Reservation created successfully",
-                    content = @Content(schema = @Schema(implementation = ReservationResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
+                    content = @Content(schema = @Schema(implementation = ReservationResponse.class))),
+
+            @ApiResponse(responseCode = "400",
                     description = "Invalid request data or validation error",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            )
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping
-    public ResponseEntity<ReservationResponse> createReservation(
-            @Valid @RequestBody CreateReservationRequest request) {
+    public ResponseEntity<ReservationResponse> createReservation(@Valid @RequestBody CreateReservationRequest request) {
 
         log.info("POST /api/reservations - Creating reservation for: {}", request.getEmail());
 
@@ -133,7 +129,7 @@ public class ReservationController {
     /**
      * Update an existing reservation.
      *
-     * @param id the reservation ID
+     * @param id      the reservation ID
      * @param request the updated reservation details
      * @return the updated reservation
      */

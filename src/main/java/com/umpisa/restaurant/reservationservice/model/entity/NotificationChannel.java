@@ -1,4 +1,4 @@
-package com.umpisa.restaurant.reservationservice.entity;
+package com.umpisa.restaurant.reservationservice.model.entity;
 
 /**
  * Enumeration representing the preferred notification channel for a customer.

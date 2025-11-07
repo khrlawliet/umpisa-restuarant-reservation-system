@@ -1,7 +1,8 @@
 package com.umpisa.restaurant.reservationservice.service;
 
-import com.umpisa.restaurant.reservationservice.entity.Reservation;
-import com.umpisa.restaurant.reservationservice.entity.ReservationStatus;
+import com.umpisa.restaurant.notificationservice.model.NotificationRequest;
+import com.umpisa.restaurant.reservationservice.model.entity.Reservation;
+import com.umpisa.restaurant.reservationservice.model.entity.ReservationStatus;
 import com.umpisa.restaurant.reservationservice.repository.ReservationRepository;
 import com.umpisa.restaurant.notificationservice.service.NotificationService;
 import com.umpisa.restaurant.notificationservice.service.NotificationTemplateService;
@@ -106,14 +107,14 @@ public class ReservationReminderScheduler {
         log.debug("Sending reminder for reservation ID: {} to customer: {}",
                 reservation.getId(), reservation.getEmail());
 
-        // Send notification based on customer's preferred channel
-        switch (reservation.getNotificationChannel()) {
-            case EMAIL -> notificationService.sendEmail(reservation.getEmail(), subject, message);
-            case SMS -> notificationService.sendSms(reservation.getPhoneNumber(), message);
-            case BOTH -> {
-                notificationService.sendEmail(reservation.getEmail(), subject, message);
-                notificationService.sendSms(reservation.getPhoneNumber(), message);
-            }
-        }
+        NotificationRequest request = NotificationRequest.builder()
+                .channel(reservation.getNotificationChannel())
+                .email(reservation.getEmail())
+                .phoneNumber(reservation.getPhoneNumber())
+                .subject(subject)
+                .message(message)
+                .build();
+
+        notificationService.sendNotification(request);
     }
 }

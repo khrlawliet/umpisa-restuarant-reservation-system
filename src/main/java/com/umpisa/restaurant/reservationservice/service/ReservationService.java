@@ -1,8 +1,8 @@
 package com.umpisa.restaurant.reservationservice.service;
 
-import com.umpisa.restaurant.reservationservice.dto.request.CreateReservationRequest;
-import com.umpisa.restaurant.reservationservice.dto.response.ReservationResponse;
-import com.umpisa.restaurant.reservationservice.dto.request.UpdateReservationRequest;
+import com.umpisa.restaurant.reservationservice.model.dto.request.CreateReservationRequest;
+import com.umpisa.restaurant.reservationservice.model.dto.response.ReservationResponse;
+import com.umpisa.restaurant.reservationservice.model.dto.request.UpdateReservationRequest;
 
 import java.util.List;
 

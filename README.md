@@ -10,21 +10,42 @@ This system allows customers to:
 - Update existing reservations
 - Cancel reservations
 - Receive notifications via Email and/or SMS
+- Get automated reminders 4 hours before their reservation
 
 ## Architecture
 
 The application follows a **traditional layered architecture** pattern with two main services:
 
-1. **Reservation Service** - Core domain handling all reservation operations (Controller → Service → Repository → Model)
-2. **Notification Service** - Handles sending notifications to customers
+### 1. Reservation Service
+Core domain handling all reservation operations:
+- **Controller Layer** - REST API endpoints for reservation management
+- **Service Layer** - Business logic, validation, and orchestration
+- **Repository Layer** - Data persistence using Spring Data JPA
+- **Scheduled Tasks** - Automated reminder notifications
 
-Services communicate through **Spring Events (pub-sub pattern)**, ensuring loose coupling and maintainability.
+### 2. Notification Service
+Handles customer notifications:
+- **Event Listeners** - Reacts to reservation events (created, updated, cancelled)
+- **Template Service** - Builds notification messages from externalized templates
+- **Notification Channels** - Supports Email and SMS
+
+### Event-Driven Communication
+Services communicate through **Spring Events (pub-sub pattern)**, ensuring:
+- Loose coupling between services
+
+### Scheduled Jobs
+The system includes automated background tasks:
+- **Reminder Scheduler** - Runs every 5 minutes to send reminders for reservations 4 hours away
+- Prevents duplicate reminders using `reminderSent` flag
+- Only sends reminders for confirmed reservations
 
 ## Technologies Used
 
 - **Java 17**
 - **Spring Boot 3.2.0**
 - **Spring Data JPA**
+- **Spring Scheduling** - Automated background tasks
+- **Spring Events** - Event-driven communication
 - **SpringDoc OpenAPI 3.0** - Interactive API documentation (Swagger UI)
 - **H2 Database** - In-memory database
 - **Lombok** - Reduce boilerplate code
@@ -36,17 +57,36 @@ Services communicate through **Spring Events (pub-sub pattern)**, ensuring loose
 
 ```
 src/main/java/com/umpisa/restaurant/
-├── reservationservice/         # Reservation Service
-│   ├── controller/            # REST API controllers
-│   ├── service/              # Business logic layer
-│   ├── repository/           # Data access layer
-│   └── model/               # DTOs, entities, enums, events
-├── notificationservice/       # Notification Service
-│   └── service/             # Notification services and event listeners
-├── config/                   # Application configuration
-│   └── OpenApiConfig.java   # Swagger/OpenAPI configuration
-└── shared/                  # Shared components
-    └── exceptions/         # Common exceptions and error handling
+├── reservationservice/              # Reservation Service
+│   ├── controller/                 # REST API controllers
+│   │   └── ReservationController.java
+│   ├── service/                   # Business logic layer
+│   │   ├── ReservationService.java
+│   │   ├── ReservationServiceImpl.java
+│   │   └── ReservationReminderScheduler.java  # Scheduled reminder job
+│   ├── mapper/                    # Entity/DTO mappers
+│   │   └── ReservationMapper.java
+│   ├── repository/                # Data access layer
+│   │   └── ReservationRepository.java
+│   └── model/                    # Domain models
+│       ├── dto/                  # Request/Response DTOs
+│       └── entity/               # Entities, enums, and events
+│
+├── notificationservice/            # Notification Service
+│   ├── service/                   # Notification services
+│   │   ├── NotificationService.java
+│   │   ├── NotificationTemplateService.java
+│   │   └── event/               # Event listeners
+│   │       └── ReservationEventListener.java
+│   └── model/                    # Notification models
+│       ├── NotificationRequest.java
+│       └── NotificationTemplateProperties.java  # YAML config binding
+│
+├── config/                        # Application configuration
+│   └── OpenApiConfig.java
+│
+└── shared/                        # Shared components
+    └── exceptions/               # Global exception handling
 ```
 
 ## Prerequisites
@@ -73,8 +113,6 @@ mvn clean package
 # Run with Maven
 mvn spring-boot:run
 
-# Or run the JAR file
-java -jar target/restaurant-reservation-system-1.0.0.jar
 ```
 
 The application will start on `http://localhost:8080`
@@ -102,175 +140,86 @@ Features:
 - ✅ **Validation Rules** - View all validation constraints inline
 - ✅ **Error Responses** - See all possible error codes and formats
 
-For complete documentation including integration with Postman and more examples, see [API.md](API.md).
+## Key Features
 
-## API Quick Reference
+### Business Features
+- ✅ **Reservation Management** - Create, view, update, and cancel reservations
+- ✅ **Multi-Channel Notifications** - Email, SMS, or both
+- ✅ **Automated Reminders** - Scheduled job runs every 5 minutes to send reminders
+  - Sends notifications 4 hours before reservation time
+  - Prevents duplicate reminders with `reminderSent` flag
+  - Only sends to confirmed reservations
+- ✅ **Email Filtering** - Query reservations by customer email
+- ✅ **Business Validation** - Future dates, guest count, status checks
 
-### Create Reservation
-```bash
-POST /api/reservations
-Content-Type: application/json
+### Technical Features
+- ✅ **RESTful API** - Clean, resource-oriented API design
+- ✅ **Event-Driven Architecture** - Decoupled services via Spring Events
+- ✅ **Scheduled Jobs** - Spring `@Scheduled` for automated tasks
+  - **Cron Expression**: `0 */5 * * * *` (every 5 minutes)
+  - **Window Check**: Finds reservations between 4h and 4h5m from now
+  - **Error Handling**: Continues processing if one reminder fails
+- ✅ **Externalized Templates** - Notification messages in YAML configuration
+- ✅ **DTO Pattern** - Separation between API contracts and domain models
+- ✅ **Global Exception Handling** - Consistent error responses
+- ✅ **Interactive API Docs** - Swagger UI for testing
 
-{
-  "customerName": "John Doe",
-  "phoneNumber": "+1234567890",
-  "email": "john@example.com",
-  "reservationDateTime": "2025-11-10T19:00:00",
-  "numberOfGuests": 4,
-  "notificationChannel": "BOTH"
-}
+## Scheduled Jobs Details
+
+### Reservation Reminder Scheduler
+
+**Class**: `ReservationReminderScheduler`
+**Schedule**: Every 5 minutes (`0 */5 * * * *`)
+**Purpose**: Send reminders 4 hours before reservation time
+
+**How it works**:
+1. Runs every 5 minutes automatically
+2. Calculates a time window (4 hours to 4 hours 5 minutes from now)
+3. Finds confirmed reservations in this window that haven't received reminders
+4. Sends notification via customer's preferred channel (Email/SMS)
+5. Marks reservation as `reminderSent = true` to prevent duplicates
+6. Logs success/failure for each reminder
+
+**Example**:
+- Current time: 10:00 AM
+- Scheduler finds reservations between 2:00 PM - 2:05 PM
+- Sends reminder: "Your reservation is in 4 hours..."
+- Next run: 10:05 AM (checks 2:05 PM - 2:10 PM reservations)
+
+## API Endpoints
+
+All endpoints are prefixed with `/api/reservations`:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/reservations` | Create a new reservation |
+| `GET` | `/api/reservations?email={email}` | Get upcoming reservations for a customer |
+| `GET` | `/api/reservations/{id}` | Get reservation by ID |
+| `PUT` | `/api/reservations/{id}` | Update an existing reservation |
+| `DELETE` | `/api/reservations/{id}` | Cancel a reservation |
+
+## Configuration
+
+### Notification Templates
+
+Templates are externalized in `application.yml` and can be modified without redeployment:
+
+```yaml
+notification:
+  templates:
+    confirmation:
+      subject: "Reservation Confirmed - ID #{reservationId}"
+      body: |
+        Dear {customerName},
+        Your reservation has been confirmed!
+        ...
+    reminder:
+      subject: "Reminder: Your Reservation Today at {time}"
+      body: |
+        Dear {customerName},
+        This is a friendly reminder about your upcoming reservation.
+        Your table will be ready in approximately 4 hours.
+        ...
 ```
 
-### Get Upcoming Reservations
-```bash
-GET /api/reservations?email=john@example.com
-```
-
-### Get Reservation by ID
-```bash
-GET /api/reservations/{id}
-```
-
-### Update Reservation
-```bash
-PUT /api/reservations/{id}
-Content-Type: application/json
-
-{
-  "reservationDateTime": "2025-11-11T20:00:00",
-  "numberOfGuests": 6
-}
-```
-
-### Cancel Reservation
-```bash
-DELETE /api/reservations/{id}
-```
-
-## Notification Channels
-
-- `EMAIL` - Send notifications via email only
-- `SMS` - Send notifications via SMS only
-- `BOTH` - Send notifications via both email and SMS
-
-**Note**: Current implementation uses mock notification services that log to console.
-
-## Testing
-
-The project includes comprehensive unit tests:
-
-```bash
-# Run all tests
-mvn test
-
-# Run tests with coverage
-mvn test jacoco:report
-```
-
-**Test Coverage**: 22 tests covering:
-- Service layer business logic
-- REST controller endpoints
-- Event listeners
-- Error handling scenarios
-
-## Sample Usage
-
-### Example 1: Create a Reservation
-
-```bash
-curl -X POST http://localhost:8080/api/reservations \
-  -H "Content-Type: application/json" \
-  -d '{
-    "customerName": "Alice Smith",
-    "phoneNumber": "+1234567890",
-    "email": "alice@example.com",
-    "reservationDateTime": "2025-11-15T18:30:00",
-    "numberOfGuests": 2,
-    "notificationChannel": "EMAIL"
-  }'
-```
-
-**Response**:
-```json
-{
-  "id": 1,
-  "customerName": "Alice Smith",
-  "phoneNumber": "+1234567890",
-  "email": "alice@example.com",
-  "reservationDateTime": "2025-11-15T18:30:00",
-  "numberOfGuests": 2,
-  "status": "CONFIRMED",
-  "notificationChannel": "EMAIL",
-  "createdAt": "2025-11-06T10:00:00",
-  "updatedAt": "2025-11-06T10:00:00"
-}
-```
-
-### Example 2: View Upcoming Reservations
-
-```bash
-curl http://localhost:8080/api/reservations?email=alice@example.com
-```
-
-### Example 3: Update Reservation
-
-```bash
-curl -X PUT http://localhost:8080/api/reservations/1 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "reservationDateTime": "2025-11-15T19:00:00",
-    "numberOfGuests": 4
-  }'
-```
-
-### Example 4: Cancel Reservation
-
-```bash
-curl -X DELETE http://localhost:8080/api/reservations/1
-```
-
-## Validation Rules
-
-- **Customer Name**: 2-100 characters
-- **Phone Number**: Valid format (10-15 digits)
-- **Email**: Valid email format
-- **Reservation Date/Time**: Must be in the future
-- **Number of Guests**: 1-50 guests
-
-## Error Handling
-
-The API returns consistent error responses:
-
-```json
-{
-  "timestamp": "2025-11-06T10:30:00",
-  "status": 404,
-  "error": "Not Found",
-  "message": "Reservation with ID 123 not found",
-  "path": "/api/reservations/123"
-}
-```
-
-## Documentation
-
-- **[Swagger UI](http://localhost:8080/swagger-ui.html)** - Interactive API documentation (Primary)
-- [API.md](API.md) - Swagger setup guide and cURL examples
-- [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md) - Architecture and design choices
-
-## Future Enhancements
-
-- Implement actual SMS/Email service integration
-- Add reservation reminder scheduler (4 hours before)
-- Add table management system
-- Implement authentication and authorization
-- Add reservation conflict detection
-- Add rate limiting
-- Create Postman collection
-
-## License
-
-This project is developed for Umpisa Technical Assessment.
-
-## Contact
-
-For questions or issues, please contact the development team.
+**Placeholders**: `{customerName}`, `{reservationId}`, `{dateTime}`, `{numberOfGuests}`, `{time}`

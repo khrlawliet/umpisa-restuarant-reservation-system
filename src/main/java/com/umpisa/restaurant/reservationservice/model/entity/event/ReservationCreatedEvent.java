@@ -1,6 +1,6 @@
-package com.umpisa.restaurant.reservationservice.entity.event;
+package com.umpisa.restaurant.reservationservice.model.entity.event;
 
-import com.umpisa.restaurant.reservationservice.entity.NotificationChannel;
+import com.umpisa.restaurant.reservationservice.model.entity.NotificationChannel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -24,12 +24,12 @@ public class GlobalExceptionHandler {
             ResourceNotFoundException ex, WebRequest request) {
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.NOT_FOUND.value())
-                .error(HttpStatus.NOT_FOUND.getReasonPhrase())
-                .message(ex.getMessage())
-                .path(request.getDescription(false).replace("uri=", ""))
-                .build();
+                                                   .timestamp(LocalDateTime.now())
+                                                   .status(HttpStatus.NOT_FOUND.value())
+                                                   .error(HttpStatus.NOT_FOUND.getReasonPhrase())
+                                                   .message(ex.getMessage())
+                                                   .path(request.getDescription(false).replace("uri=", ""))
+                                                   .build();
 
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
@@ -39,12 +39,12 @@ public class GlobalExceptionHandler {
             InvalidReservationException ex, WebRequest request) {
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
-                .message(ex.getMessage())
-                .path(request.getDescription(false).replace("uri=", ""))
-                .build();
+                                                   .timestamp(LocalDateTime.now())
+                                                   .status(HttpStatus.BAD_REQUEST.value())
+                                                   .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                                                   .message(ex.getMessage())
+                                                   .path(request.getDescription(false).replace("uri=", ""))
+                                                   .build();
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -61,13 +61,13 @@ public class GlobalExceptionHandler {
         });
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
-                .message("Validation failed")
-                .path(request.getDescription(false).replace("uri=", ""))
-                .validationErrors(validationErrors)
-                .build();
+                                                   .timestamp(LocalDateTime.now())
+                                                   .status(HttpStatus.BAD_REQUEST.value())
+                                                   .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                                                   .message("Validation failed")
+                                                   .path(request.getDescription(false).replace("uri=", ""))
+                                                   .validationErrors(validationErrors)
+                                                   .build();
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -77,12 +77,12 @@ public class GlobalExceptionHandler {
             Exception ex, WebRequest request) {
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
-                .message(ex.getMessage())
-                .path(request.getDescription(false).replace("uri=", ""))
-                .build();
+                                                   .timestamp(LocalDateTime.now())
+                                                   .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                                                   .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                                                   .message(ex.getMessage())
+                                                   .path(request.getDescription(false).replace("uri=", ""))
+                                                   .build();
 
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }

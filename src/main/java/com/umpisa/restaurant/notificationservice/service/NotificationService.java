@@ -1,16 +1,33 @@
 package com.umpisa.restaurant.notificationservice.service;
 
+import com.umpisa.restaurant.notificationservice.model.NotificationRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
  * Service for sending notifications to customers.
- * This is a mock implementation that logs notification actions.
- * In a production environment, this would integrate with actual SMS and email services.
  */
 @Slf4j
 @Service
 public class NotificationService {
+
+    /**
+     * Send notification via the specified channel.
+     * This method routes the notification to the appropriate channel(s) based on the customer's preference.
+     *
+     * @param request the notification request containing all necessary information
+     */
+    public void sendNotification(NotificationRequest request) {
+        switch (request.getChannel()) {
+            case EMAIL -> sendEmail(request.getEmail(), request.getSubject(), request.getMessage());
+            case SMS -> sendSms(request.getPhoneNumber(), request.getMessage());
+            case BOTH -> {
+                sendEmail(request.getEmail(), request.getSubject(), request.getMessage());
+                sendSms(request.getPhoneNumber(), request.getMessage());
+            }
+            default -> log.warn("Unknown notification channel: {}", request.getChannel());
+        }
+    }
 
     /**
      * Send SMS notification to a phone number.
@@ -18,7 +35,7 @@ public class NotificationService {
      * @param phoneNumber the recipient's phone number
      * @param message the SMS message content
      */
-    public void sendSms(String phoneNumber, String message) {
+    private void sendSms(String phoneNumber, String message) {
         log.info("=".repeat(80));
         log.info("SENT SMS");
         log.info("To: {}", phoneNumber);
@@ -35,7 +52,7 @@ public class NotificationService {
      * @param subject the email subject
      * @param body the email body content
      */
-    public void sendEmail(String email, String subject, String body) {
+    private void sendEmail(String email, String subject, String body) {
         log.info("=".repeat(80));
         log.info("SENT EMAIL");
         log.info("To: {}", email);
@@ -45,4 +62,5 @@ public class NotificationService {
 
         System.out.println("Sent EMAIL to " + email);
     }
+
 }

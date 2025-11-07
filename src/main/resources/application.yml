@@ -29,3 +29,68 @@ logging:
     com.umpisa.restaurant: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# Notification Templates Configuration
+notification:
+  templates:
+    confirmation:
+      subject: "Reservation Confirmed - ID #{reservationId}"
+      body: |
+        Dear {customerName},
+
+        Your reservation has been confirmed!
+
+        Reservation ID: {reservationId}
+        Date & Time: {dateTime}
+        Number of Guests: {numberOfGuests}
+
+        We look forward to serving you!
+
+        Best regards,
+        Restaurant Reservation System
+
+    cancellation:
+      subject: "Reservation Cancelled - ID #{reservationId}"
+      body: |
+        Dear {customerName},
+
+        Your reservation (ID: {reservationId}) has been cancelled.
+
+        If you did not request this cancellation, please contact us immediately.
+
+        Thank you,
+        Restaurant Reservation System
+
+    update:
+      subject: "Reservation Updated - ID #{reservationId}"
+      body: |
+        Dear {customerName},
+
+        Your reservation (ID: {reservationId}) has been updated.
+
+        New Date & Time: {dateTime}
+        New Number of Guests: {numberOfGuests}
+
+        We look forward to serving you!
+
+        Best regards,
+        Restaurant Reservation System
+
+    reminder:
+      subject: "Reminder: Your Reservation Today at {time}"
+      body: |
+        Dear {customerName},
+
+        This is a friendly reminder about your upcoming reservation.
+
+        Date & Time: {dateTime}
+        Number of Guests: {numberOfGuests}
+
+        Your table will be ready for you in approximately 4 hours.
+
+        If you need to make any changes or cancel, please contact us as soon as possible.
+
+        We look forward to serving you!
+
+        Best regards,
+        Restaurant Reservation System
