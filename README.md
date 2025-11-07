@@ -140,6 +140,22 @@ Features:
 - ✅ **Validation Rules** - View all validation constraints inline
 - ✅ **Error Responses** - See all possible error codes and formats
 
+### Postman Collection
+
+For users who prefer Postman for API testing, a pre-configured collection is available:
+
+**📦 Collection File**: `restaurant-reservation-api.postman_collection.json`
+
+**How to use**:
+1. Open Postman
+2. Click **Import** in the top-left corner
+3. Select the `restaurant-reservation-api.postman_collection.json` file from the project root
+4. The collection will be imported with all API endpoints pre-configured
+5. Make sure the application is running on `http://localhost:8080`
+6. Execute requests directly from Postman
+
+The collection includes all endpoints with example payloads for easy testing.
+
 ## Key Features
 
 ### Business Features
